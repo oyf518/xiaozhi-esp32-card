@@ -875,25 +875,33 @@ void LcdDisplay::SetupUI() {
     lv_obj_set_style_text_font(network_label_, icon_font, 0);
     lv_obj_set_style_text_color(network_label_, lvgl_theme->text_color(), 0);
 
-    // Right icons container
-    lv_obj_t* right_icons = lv_obj_create(top_bar_);
-    lv_obj_set_size(right_icons, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    lv_obj_set_style_bg_opa(right_icons, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_border_width(right_icons, 0, 0);
-    lv_obj_set_style_pad_all(right_icons, 0, 0);
-    lv_obj_set_flex_flow(right_icons, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(right_icons, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    // 右上角状态控件: 直接挂在 top_bar_(几何确定 240x41)上, 用 IGNORE_LAYOUT
+    // 脱离 flex 流后绝对定位。不再嵌套 LV_SIZE_CONTENT 容器 —— 本板实测该容器
+    // 会被压缩到 0 宽导致子项被裁剪(电池图标因此上不了屏)。
+    // 电量按本板决定只显示百分比数字文本(font_awesome 电池字形渲染异常弃用)。
+    // battery_label_ 仍需创建为空标签: 上游 LcdDisplay::SetTheme() 对它直接
+    // 解引用设样式(nullptr 会崩), 空文本零视觉影响。
+    // 另: 不嵌套 LV_SIZE_CONTENT 容器 —— 本板实测会被压到 0 宽裁掉子项。
+    battery_pct_label_ = lv_label_create(top_bar_);
+    lv_label_set_text(battery_pct_label_, "");
+    lv_obj_set_style_text_font(battery_pct_label_, text_font, 0);
+    lv_obj_set_style_text_color(battery_pct_label_, lvgl_theme->text_color(), 0);
+    lv_obj_add_flag(battery_pct_label_, LV_OBJ_FLAG_IGNORE_LAYOUT);
+    lv_obj_align(battery_pct_label_, LV_ALIGN_TOP_RIGHT, -6, 8);
 
-    mute_label_ = lv_label_create(right_icons);
-    lv_label_set_text(mute_label_, "");
-    lv_obj_set_style_text_font(mute_label_, icon_font, 0);
-    lv_obj_set_style_text_color(mute_label_, lvgl_theme->text_color(), 0);
-
-    battery_label_ = lv_label_create(right_icons);
+    battery_label_ = lv_label_create(top_bar_);
     lv_label_set_text(battery_label_, "");
     lv_obj_set_style_text_font(battery_label_, icon_font, 0);
     lv_obj_set_style_text_color(battery_label_, lvgl_theme->text_color(), 0);
-    lv_obj_set_style_margin_left(battery_label_, lvgl_theme->spacing(2), 0);
+    lv_obj_add_flag(battery_label_, LV_OBJ_FLAG_IGNORE_LAYOUT);
+    lv_obj_align(battery_label_, LV_ALIGN_TOP_RIGHT, -40, 6);
+
+    mute_label_ = lv_label_create(top_bar_);
+    lv_label_set_text(mute_label_, "");
+    lv_obj_set_style_text_font(mute_label_, icon_font, 0);
+    lv_obj_set_style_text_color(mute_label_, lvgl_theme->text_color(), 0);
+    lv_obj_add_flag(mute_label_, LV_OBJ_FLAG_IGNORE_LAYOUT);
+    lv_obj_align(mute_label_, LV_ALIGN_TOP_RIGHT, -6, 6);  // 与电量位置互换覆盖, 静音优先展示
 
     /* Layer 2: Status bar - for center text labels */
     status_bar_ = lv_obj_create(screen);
@@ -1160,13 +1168,18 @@ void LcdDisplay::SetTheme(Theme* theme) {
     auto large_icon_font = lvgl_theme->large_icon_font()->font();
 
     if (text_font->line_height >= 40) {
-        lv_obj_set_style_text_font(mute_label_, large_icon_font, 0);
-        lv_obj_set_style_text_font(battery_label_, large_icon_font, 0);
-        lv_obj_set_style_text_font(network_label_, large_icon_font, 0);
+        if (mute_label_) lv_obj_set_style_text_font(mute_label_, large_icon_font, 0);
+        if (battery_label_) lv_obj_set_style_text_font(battery_label_, large_icon_font, 0);
+        if (network_label_) lv_obj_set_style_text_font(network_label_, large_icon_font, 0);
+        if (battery_pct_label_) lv_obj_set_style_text_font(battery_pct_label_, text_font, 0);
     } else {
-        lv_obj_set_style_text_font(mute_label_, icon_font, 0);
-        lv_obj_set_style_text_font(battery_label_, icon_font, 0);
-        lv_obj_set_style_text_font(network_label_, icon_font, 0);
+        if (mute_label_) lv_obj_set_style_text_font(mute_label_, icon_font, 0);
+        if (battery_label_) lv_obj_set_style_text_font(battery_label_, icon_font, 0);
+        if (network_label_) lv_obj_set_style_text_font(network_label_, icon_font, 0);
+        if (battery_pct_label_) {
+            lv_obj_set_style_text_font(battery_pct_label_, text_font, 0);
+            lv_obj_set_style_text_color(battery_pct_label_, lvgl_theme->text_color(), 0);
+        }
     }
 
     // Set parent text color

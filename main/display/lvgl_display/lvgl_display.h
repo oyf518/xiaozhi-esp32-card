@@ -34,6 +34,7 @@ protected:
     lv_obj_t *notification_label_ = nullptr;
     lv_obj_t *mute_label_ = nullptr;
     lv_obj_t *battery_label_ = nullptr;
+    lv_obj_t *battery_pct_label_ = nullptr;  // 电量百分比文本(图标字体无数字字形)
     lv_obj_t* low_battery_popup_ = nullptr;
     lv_obj_t* low_battery_label_ = nullptr;
     

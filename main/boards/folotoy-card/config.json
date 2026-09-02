@@ -1,0 +1,17 @@
+{
+    "target": "esp32c3",
+    "builds": [
+        {
+            "name": "folotoy-card",
+            "sdkconfig_append": [
+                "CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y",
+                "CONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions/v2/8m.csv\"",
+                "CONFIG_ESPTOOLPY_FLASHMODE_DIO=y",
+                "CONFIG_ESPTOOLPY_FLASHFREQ_40M=y",
+                "CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_160=y",
+                "CONFIG_USE_ESP_WAKE_WORD=y",
+                "CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y"
+            ]
+        }
+    ]
+}

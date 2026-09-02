@@ -61,6 +61,9 @@ LvglDisplay::~LvglDisplay() {
     if (battery_label_ != nullptr) {
         lv_obj_del(battery_label_);
     }
+    if (battery_pct_label_ != nullptr) {
+        lv_obj_del(battery_pct_label_);
+    }
     if( low_battery_popup_ != nullptr ) {
         lv_obj_del(low_battery_popup_);
     }
@@ -166,12 +169,21 @@ void LvglDisplay::UpdateStatusBar(bool update_all) {
                 FONT_AWESOME_BATTERY_FULL, // 80-99%
                 FONT_AWESOME_BATTERY_FULL, // 100%
             };
-            icon = levels[battery_level / 20];
+            // 防御: 板级电量计异常时可能上报 >100 或负值, 越界索引会读出野指针
+            int idx = battery_level;
+            if (idx < 0) idx = 0;
+            if (idx > 100) idx = 100;
+            icon = levels[idx / 20];
         }
         DisplayLockGuard lock(this);
         if (battery_label_ != nullptr && battery_icon_ != icon) {
             battery_icon_ = icon;
             lv_label_set_text(battery_label_, battery_icon_);
+        }
+        if (battery_pct_label_ != nullptr) {
+            char pct[8];
+            snprintf(pct, sizeof(pct), "%d%%", battery_level);
+            lv_label_set_text(battery_pct_label_, pct);
         }
 
         // Check low battery popup only when clock tick event is triggered
