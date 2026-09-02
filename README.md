@@ -12,6 +12,24 @@ As a voice interaction entry, the XiaoZhi AI chatbot leverages the AI capabiliti
 
 <img src="docs/mcp-based-graph.jpg" alt="Control everything via MCP" width="320">
 
+# xiaozhi-esp32-card
+
+**中文** | [English](README.md)
+
+[78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32) 的 **TRAE AI Passport** 移植版：把小智 AI 装进名片大小的电子工牌（FoloToy-Card，ESP32-C3）。
+
+## 移植说明
+
+基于上游 commit [`1d2b71f`](https://github.com/78/xiaozhi-esp32/commit/1d2b71f2)（2026-03）。本仓库 main 分支停留在该基线 + 以下移植改动，不跟随上游滚动更新：
+
+- 新增板级定义 `main/boards/folotoy-card/`：TRAE AI Passport 卡片（ST7789 2 寸屏、I2S 音频、ADC 三键、CW2015 电量计）
+- 新增板级定义 `main/boards/xingzhi-abs-2.0/`
+- `main/display/lcd_display.cc` 等显示路径适配
+
+构建方式与上游一致（`idf.py set-target esp32c3 && idf.py build flash monitor`），服务器地址等配置见上游文档。
+
+---
+
 ## Version Notes
 
 The current v2 version is incompatible with the v1 partition table, so it is not possible to upgrade from v1 to v2 via OTA. For partition table details, see [partitions/v2/README.md](partitions/v2/README.md).
